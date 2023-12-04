@@ -60,6 +60,14 @@ def create_poll(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_polls(request):
+    polls = Poll_model.objects.all()
+    serializer = PollSerializer(polls, many=True)
+    return Response(serializer.data)
+
+
 class PollDetailView(generics.ListAPIView):
     queryset = Poll_model.objects.all()
     serializer_class = PollSerializer
