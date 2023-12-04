@@ -52,7 +52,7 @@ class UserRegisterView(APIView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_poll(request):
-    request.data.update({'created_by': request.user})
+    request.data.update({'created_by': request.user.user_id})
     serializer = PollSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
