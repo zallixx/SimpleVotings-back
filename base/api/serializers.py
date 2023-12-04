@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from ..models import Poll_model
 
 UserModel = get_user_model()
 
@@ -14,3 +15,9 @@ class RegisterSerializer(serializers.ModelSerializer):
                                              password=validated_data['password'])
         user.save()
         return user
+
+
+class PollSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Poll_model
+        fields = '__all__'

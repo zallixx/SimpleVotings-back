@@ -55,3 +55,15 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+
+class Poll_model(models.Model):
+    id = models.AutoField(primary_key=True)
+    question = models.CharField(max_length=255)
+    answers = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    redacted_at = models.DateTimeField(auto_now=True, blank=True)
+
+    def __str__(self):
+        return self.question
