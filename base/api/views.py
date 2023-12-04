@@ -10,6 +10,7 @@ from ..models import Poll_model
 from django.contrib.auth.decorators import login_required
 import datetime
 
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -59,7 +60,12 @@ class PollListView(generics.ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PollDetailView(generics.RetrieveUpdateDestroyAPIView):
+class PollDetailView(generics.ListAPIView):
+    queryset = Poll_model.objects.all()
+    serializer_class = PollSerializer
+
+
+class PollEdit(generics.RetrieveUpdateDestroyAPIView):
     queryset = Poll_model.objects.all()
     serializer_class = PollSerializer
 

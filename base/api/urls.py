@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import MyTokenObtainPairView, PollListView, PollDetailView
+from .views import MyTokenObtainPairView, PollListView, PollDetailView, PollEdit
 
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -12,5 +12,6 @@ urlpatterns = [
     path('register/', views.UserRegisterView.as_view()),
     path('polls/', PollListView.as_view(), name='poll-list'),
     path('polls/<int:pk>/', PollDetailView.as_view(), name='poll-detail'),
+    path('polls/<int:pk>/edit/', PollEdit.as_view(), name='poll-edit'),
     path('', views.getRoutes),
 ]
