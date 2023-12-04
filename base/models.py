@@ -25,9 +25,9 @@ class UserManager(BaseUserManager):
         return user
 
 
-class UserModel(AbstractBaseUser):
+class User(AbstractBaseUser):
     """Model of user"""
-
+    user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=30, unique=True)
     email = models.EmailField(max_length=60, unique=True)
     first_name = models.CharField(max_length=30, null=True, blank=True)
@@ -42,6 +42,7 @@ class UserModel(AbstractBaseUser):
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
+    USER_ID_FIELD = 'user_id'
 
     class Meta:
         ordering = ['-date_joined']
