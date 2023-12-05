@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from base.api.serializers import RegisterSerializer, PollSerializer
 from base.api.validations import custom_validation
-from ..models import Poll
+from ..models import Poll, Vote
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -94,3 +94,27 @@ def edit_poll(request, pk):
             to_return.update({'choices': choices})
             return Response(to_return)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def vote(request, pk):
+    poll = Poll.objects.get(id=pk)
+    choices = request.data['choices']
+    if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
+        return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
+    if poll.type_voting == 1:
+        for choice in choices:
+            poll.choice_set.get(choice=choice).add_vote()
+            vote_field = Vote(poll=poll, user=request.user)
+            vote_field.save()
+            poll.save()
+        return Response('Voted', status=status.HTTP_201_CREATED)
+    elif len(choices) > 1:
+        return Response('You are not allowed to select more than one choice', status=status.HTTP_400_BAD_REQUEST)
+    else:
+        poll.choice_set.get(choice=choices[0]).add_vote()
+        vote_field = Vote(poll=poll, user=request.user)
+        vote_field.save()
+        poll.save()
+    return Response('Voted', status=status.HTTP_201_CREATED)

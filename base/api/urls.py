@@ -14,5 +14,6 @@ urlpatterns = [
     path('polls/', views.get_polls, name='view_polls'),
     path('polls/<int:pk>/', views.get_poll, name='poll-detail'),
     path('polls/<int:pk>/edit/', views.edit_poll, name='poll-edit'),
+    path('polls/<int:pk>/vote/', views.vote, name='vote'),
     path('', views.getRoutes),
 ]

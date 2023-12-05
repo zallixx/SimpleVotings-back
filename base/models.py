@@ -81,9 +81,17 @@ class Choice(models.Model):
     choice = models.CharField(max_length=255)
     votes = models.IntegerField(default=0)
 
+    def add_vote(self):
+        self.votes += 1
+        self.save()
+
     def __str__(self):
         return self.choice
 
     class Meta:
         verbose_name = 'Вариант ответа'
         verbose_name_plural = 'Варианты ответов'
+
+class Vote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
