@@ -2,13 +2,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from base.api.serializers import RegisterSerializer, PollSerializer
 from base.api.validations import custom_validation
-from ..models import Poll_model
+from ..models import Poll
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -61,7 +60,7 @@ def create_poll(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_polls(request):
-    polls = Poll_model.objects.all()
+    polls = Poll.objects.all()
     serializer = PollSerializer(polls, many=True)
     return Response(serializer.data)
 
@@ -69,7 +68,7 @@ def get_polls(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_poll(request, pk):
-    poll = Poll_model.objects.get(id=pk)
+    poll = Poll.objects.get(id=pk)
     serializer = PollSerializer(poll, many=False)
     return Response(serializer.data)
 
@@ -77,7 +76,7 @@ def get_poll(request, pk):
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def edit_poll(request, pk):
-    poll = Poll_model.objects.get(id=pk)
+    poll = Poll.objects.get(id=pk)
     serializer = PollSerializer(poll, data=request.data, partial=True)
     if 'created_by' in request.data.keys():
         if request.data['created_by'] == request.user.user_id:

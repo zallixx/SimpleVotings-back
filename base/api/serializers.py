@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from ..models import Poll_model
+
+from ..models import Poll
 
 UserModel = get_user_model()
 
@@ -19,5 +20,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class PollSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Poll_model
+        model = Poll
         fields = '__all__'
+
+    def create(self, validated_data):
+        poll = Poll.objects.create(**validated_data)
+        for choice in self.initial_data['choices']:
+            poll.choice_set.create(choice=choice)
+        poll.save()
+        return poll

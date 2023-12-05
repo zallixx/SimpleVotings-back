@@ -57,13 +57,33 @@ class User(AbstractBaseUser):
         return True
 
 
-class Poll_model(models.Model):
+class PollType(models.IntegerChoices):
+    SINGLE = 0
+    MULTIPLE = 1
+    DISCRETE = 2
+
+
+class Poll(models.Model):
     id = models.AutoField(primary_key=True)
     question = models.CharField(max_length=255)
-    answers = models.TextField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     redacted_at = models.DateTimeField(auto_now=True, blank=True)
+    type_voting = models.IntegerField(choices=PollType.choices, default=PollType.DISCRETE,
+                                      verbose_name='Тип голосования')
 
     def __str__(self):
         return self.question
+
+
+class Choice(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    choice = models.CharField(max_length=255)
+    votes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.choice
+
+    class Meta:
+        verbose_name = 'Вариант ответа'
+        verbose_name_plural = 'Варианты ответов'
