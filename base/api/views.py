@@ -68,9 +68,12 @@ def get_polls(request):
     return Response(serializer.data)
 
 
-class PollDetailView(generics.ListAPIView):
-    queryset = Poll_model.objects.all()
-    serializer_class = PollSerializer
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_poll(request, pk):
+    poll = Poll_model.objects.get(id=pk)
+    serializer = PollSerializer(poll, many=False)
+    return Response(serializer.data)
 
 
 class PollEdit(generics.RetrieveUpdateDestroyAPIView):
