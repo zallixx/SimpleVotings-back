@@ -76,15 +76,20 @@ def get_poll(request, pk):
     return Response(serializer.data)
 
 
-class PollEdit(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Poll_model.objects.all()
-    serializer_class = PollSerializer
-
-    def patch(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.redacted_at = datetime.datetime.now()
-        instance.save()
-        instance.question = request.data.get(instance.question)
-        instance.answers = request.data.get(instance.answers)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def edit_poll(request, pk):
+    poll = Poll_model.objects.get(id=pk)
+    serializer = PollSerializer(poll, data=request.data, partial=True)
+    if 'created_by' in request.data.keys():
+        if request.data['created_by'] == request.user.user_id:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        if poll.created_by.user_id == request.user.user_id:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
