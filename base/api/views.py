@@ -70,7 +70,12 @@ def get_polls(request):
 def get_poll(request, pk):
     poll = Poll.objects.get(id=pk)
     serializer = PollSerializer(poll, many=False)
-    return Response(serializer.data)
+    choices = []
+    for choice in poll.choice_set.all():
+        choices.append(str(choice))
+    to_return = dict(serializer.data)
+    to_return.update({'choices': choices})
+    return Response(to_return)
 
 
 @api_view(['PATCH'])
@@ -78,15 +83,14 @@ def get_poll(request, pk):
 def edit_poll(request, pk):
     poll = Poll.objects.get(id=pk)
     serializer = PollSerializer(poll, data=request.data, partial=True)
-    if 'created_by' in request.data.keys():
-        if request.data['created_by'] == request.user.user_id:
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        if poll.created_by.user_id == request.user.user_id:
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if ('created_by' in request.data.keys() and request.data['created_by'] == request.user.user_id) or (
+            poll.created_by.user_id == request.user.user_id):
+        if serializer.is_valid():
+            serializer.save()
+            choices = []
+            for choice in poll.choice_set.all():
+                choices.append(str(choice))
+            to_return = dict(serializer.data)
+            to_return.update({'choices': choices})
+            return Response(to_return)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
