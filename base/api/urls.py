@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('register/', views.UserRegisterView.as_view()),
+    path('register/', views.register),
     path('polls/new', views.create_poll, name='create_poll'),
     path('polls/', views.get_polls, name='view_polls'),
     path('polls/<int:pk>/', views.get_poll, name='poll-detail'),
