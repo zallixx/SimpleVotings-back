@@ -95,3 +95,8 @@ class Choice(models.Model):
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+
+class Complain(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    text = models.TextField()

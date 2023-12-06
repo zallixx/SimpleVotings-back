@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils.datetime_safe import datetime
 from rest_framework import serializers
 
-from ..models import Poll
+from ..models import Poll, Complain
 
 UserModel = get_user_model()
 
@@ -43,3 +43,9 @@ class PollSerializer(serializers.ModelSerializer):
         instance.redacted_at = datetime.now()
         instance.save()
         return instance
+
+
+class ComplainSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Complain
+        fields = '__all__'

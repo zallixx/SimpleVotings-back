@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.api.serializers import RegisterSerializer, PollSerializer
+from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer
 from base.api.validations import custom_validation
 from ..models import Poll, Vote
 
@@ -118,3 +118,16 @@ def vote(request, pk):
         vote_field.save()
         poll.save()
     return Response('Voted', status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complain(request, pk):
+    poll = Poll.objects.get(id=pk)
+    if poll.created_by.user_id == request.user.user_id:
+        return Response('You cannot complain about your own poll', status=status.HTTP_400_BAD_REQUEST)
+    complain = ComplainSerializer(data=request.data)
+    if complain.is_valid():
+        complain.save()
+        return Response('Complained', status=status.HTTP_201_CREATED)
+    return Response(complain.errors, status=status.HTTP_400_BAD_REQUEST)
