@@ -99,6 +99,7 @@ def edit_poll(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote(request, pk):
+    print(request.data)
     poll = Poll.objects.get(id=pk)
     choices = request.data['choices']
     if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
@@ -117,7 +118,8 @@ def vote(request, pk):
         vote_field = Vote(poll=poll, user=request.user)
         vote_field.save()
         poll.save()
-    return Response('Voted', status=status.HTTP_201_CREATED)
+        return Response('Voted', status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['POST'])
@@ -131,3 +133,18 @@ def complain(request, pk):
         complain.save()
         return Response('Complained', status=status.HTTP_201_CREATED)
     return Response(complain.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def results(request, pk):
+    if Vote.objects.filter(user=request.user, poll=pk).exists():
+        poll = Poll.objects.get(id=pk)
+        serializer = PollSerializer(poll, many=False)
+        choices = []
+        for choice in poll.choice_set.all():
+            choices.append([str(choice), choice.votes])
+        to_return = dict(serializer.data)
+        to_return.update({'choices': choices})
+        return Response(to_return, status=status.HTTP_200_OK)
+    return Response('You have not voted yet', status=status.HTTP_400_BAD_REQUEST)
