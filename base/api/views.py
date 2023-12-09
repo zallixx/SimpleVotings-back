@@ -99,9 +99,8 @@ def edit_poll(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote(request, pk):
-    print(request.data)
     poll = Poll.objects.get(id=pk)
-    choices = request.data['choices']
+    choices = [request.data['choices']]
     if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
         return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
     if poll.type_voting == 1:
