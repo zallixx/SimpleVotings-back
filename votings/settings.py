@@ -113,8 +113,13 @@ WSGI_APPLICATION = 'votings.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'maindjango',
+        'USER': 'timabananaman',
+        'PASSWORD': 'y2lHBChYbQ5K',
+        'HOST': 'ep-polished-moon-56417923.eu-central-1.aws.neon.tech',
+        'PORT': '5432',
+        'OPTIONS': {'sslmode': 'require'},
     }
 }
 
@@ -160,4 +165,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'base.User'
-
