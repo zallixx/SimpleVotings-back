@@ -123,7 +123,6 @@ def vote(request, pk):
         return Response('You need to select at least one choice', status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def complain(request, pk):
@@ -151,6 +150,7 @@ def results(request, pk):
         return Response(to_return, status=status.HTTP_200_OK)
     return Response('You have not voted yet', status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_author_name(request, pk):
@@ -158,3 +158,13 @@ def get_author_name(request, pk):
         user = User.objects.get(user_id=pk)
         return Response(user.username, status=status.HTTP_200_OK)
     return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_poll(request, pk):
+    poll = Poll.objects.get(id=pk)
+    if poll.created_by.user_id == request.user.user_id:
+        poll.delete()
+        return Response('Deleted', status=status.HTTP_200_OK)
+    return Response('You cannot delete this poll', status=status.HTTP_400_BAD_REQUEST)
