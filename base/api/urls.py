@@ -18,5 +18,6 @@ urlpatterns = [
     path('polls/<int:pk>/complain/', views.complain, name='complain'),
     path('polls/<int:pk>/results/', views.results, name='results'),
     path('users/<int:pk>/username/', views.get_author_name, name='get_author_name'),
+    path('polls/<int:pk>/delete/', views.delete_poll, name='delete_poll'),
     path('', views.getRoutes),
 ]
