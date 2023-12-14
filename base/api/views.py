@@ -129,11 +129,12 @@ def complain(request, pk):
     poll = Poll.objects.get(id=pk)
     if poll.created_by.user_id == request.user.user_id:
         return Response('You cannot complain about your own poll', status=status.HTTP_400_BAD_REQUEST)
-    complain = ComplainSerializer(data=request.data)
-    if complain.is_valid():
-        complain.save()
+    complaint = ComplainSerializer(data=(request.data | {'user': request.user.user_id, 'poll': poll.id}))
+    print(complaint)
+    if complaint.is_valid():
+        complaint.save()
         return Response('Complained', status=status.HTTP_201_CREATED)
-    return Response(complain.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(complaint.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
