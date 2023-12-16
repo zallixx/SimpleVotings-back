@@ -206,3 +206,14 @@ def get_user_data(request):
     user = User.objects.get(user_id=request.user.user_id)
     serializer = UserSerializer(user, many=False)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = User.objects.get(user_id=request.user.user_id)
+    if user.check_password(request.data['old_password']):
+        user.set_password(request.data['new_password'])
+        user.save()
+        return Response('Password changed', status=status.HTTP_200_OK)
+    return Response('Wrong password', status=status.HTTP_400_BAD_REQUEST)
