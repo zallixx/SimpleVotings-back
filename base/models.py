@@ -101,4 +101,4 @@ class Complain(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     text = models.TextField()
     status = models.TextField(default='Отправлена. Ожидает рассмотрения.')
-    response = models.TextField()
+    response = models.TextField(default='')
