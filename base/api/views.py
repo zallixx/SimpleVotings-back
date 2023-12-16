@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer
+from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer, UserSerializer
 from base.api.validations import custom_validation
 from ..models import Poll, Vote, User, Complain
 
@@ -141,6 +141,7 @@ def complain(request, pk):
         return Response('Complained', status=status.HTTP_201_CREATED)
     return Response(complaint.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_complains(request):
@@ -148,12 +149,14 @@ def get_complains(request):
     serializer = ComplainSerializer(complains, many=True)
     return Response(serializer.data)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_complain(request, pk):
     complains = Complain.objects.filter(id=pk)
     serializer = ComplainSerializer(complains, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -178,12 +181,14 @@ def get_author_name(request, pk):
         return Response(user.username, status=status.HTTP_200_OK)
     return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_vote_history(request):
     votes = Vote.objects.filter(user_id=request.user.user_id)
     serializer = VoteSerializer(votes, many=True)
     return Response(serializer.data)
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -193,3 +198,22 @@ def delete_poll(request, pk):
         poll.delete()
         return Response('Deleted', status=status.HTTP_200_OK)
     return Response('You cannot delete this poll', status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_data(request):
+    user = User.objects.get(user_id=request.user.user_id)
+    serializer = UserSerializer(user, many=False)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = User.objects.get(user_id=request.user.user_id)
+    if user.check_password(request.data['old_password']):
+        user.set_password(request.data['new_password'])
+        user.save()
+        return Response('Password changed', status=status.HTTP_200_OK)
+    return Response('Wrong password', status=status.HTTP_400_BAD_REQUEST)
