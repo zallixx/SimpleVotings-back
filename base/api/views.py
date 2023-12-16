@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer
 from base.api.validations import custom_validation
-from ..models import Poll, Vote
+from ..models import Poll, Vote, User
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -100,25 +100,27 @@ def edit_poll(request, pk):
 @permission_classes([IsAuthenticated])
 def vote(request, pk):
     poll = Poll.objects.get(id=pk)
-    choices = [request.data['choices']]
-    if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
-        return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
-    if poll.type_voting == 1:
-        for choice in choices:
-            poll.choice_set.get(choice=choice).add_vote()
+    try:
+        choices = request.data['choices']
+        if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
+            return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
+        if poll.type_voting == 1:
+            for choice in choices:
+                poll.choice_set.get(choice=choice).add_vote()
+                vote_field = Vote(poll=poll, user=request.user)
+                vote_field.save()
+                poll.save()
+            return Response('Voted', status=status.HTTP_201_CREATED)
+        elif len(choices) > 1:
+            return Response('You are not allowed to select more than one choice', status=status.HTTP_400_BAD_REQUEST)
+        else:
+            poll.choice_set.get(choice=choices[0]).add_vote()
             vote_field = Vote(poll=poll, user=request.user)
             vote_field.save()
             poll.save()
-        return Response('Voted', status=status.HTTP_201_CREATED)
-    elif len(choices) > 1:
-        return Response('You are not allowed to select more than one choice', status=status.HTTP_400_BAD_REQUEST)
-    else:
-        poll.choice_set.get(choice=choices[0]).add_vote()
-        vote_field = Vote(poll=poll, user=request.user)
-        vote_field.save()
-        poll.save()
-        return Response('Voted', status=status.HTTP_201_CREATED)
-
+            return Response('Voted', status=status.HTTP_201_CREATED)
+    except:
+        return Response('You need to select at least one choice', status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -127,11 +129,12 @@ def complain(request, pk):
     poll = Poll.objects.get(id=pk)
     if poll.created_by.user_id == request.user.user_id:
         return Response('You cannot complain about your own poll', status=status.HTTP_400_BAD_REQUEST)
-    complain = ComplainSerializer(data=request.data)
-    if complain.is_valid():
-        complain.save()
+    complaint = ComplainSerializer(data=(request.data | {'user': request.user.user_id, 'poll': poll.id}))
+    print(complaint)
+    if complaint.is_valid():
+        complaint.save()
         return Response('Complained', status=status.HTTP_201_CREATED)
-    return Response(complain.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(complaint.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -147,3 +150,22 @@ def results(request, pk):
         to_return.update({'choices': choices})
         return Response(to_return, status=status.HTTP_200_OK)
     return Response('You have not voted yet', status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_author_name(request, pk):
+    if User.objects.filter(user_id=pk).exists():
+        user = User.objects.get(user_id=pk)
+        return Response(user.username, status=status.HTTP_200_OK)
+    return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_poll(request, pk):
+    poll = Poll.objects.get(id=pk)
+    if poll.created_by.user_id == request.user.user_id:
+        poll.delete()
+        return Response('Deleted', status=status.HTTP_200_OK)
+    return Response('You cannot delete this poll', status=status.HTTP_400_BAD_REQUEST)
