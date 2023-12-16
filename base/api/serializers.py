@@ -3,7 +3,7 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from ..models import Poll, Complain, Vote
+from ..models import Poll, Complain, Vote, User
 
 UserModel = get_user_model()
 
@@ -51,7 +51,14 @@ class ComplainSerializer(serializers.ModelSerializer):
         model = Complain
         fields = '__all__'
 
+
 class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
+        fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
         fields = '__all__'
