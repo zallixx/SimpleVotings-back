@@ -21,5 +21,6 @@ urlpatterns = [
     path('polls/<int:pk>/delete/', views.delete_poll, name='delete_poll'),
     path('complains/', views.get_complains, name='get_complains'),
     path('complains/<int:pk>/', views.get_complain, name='get_complain'),
+    path('vote-history/', views.get_vote_history, name='get_vote_history'),
     path('', views.getRoutes),
 ]
