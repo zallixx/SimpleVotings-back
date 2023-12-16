@@ -110,14 +110,16 @@ def vote(request, pk):
         if poll.type_voting == 1:
             for choice in choices:
                 poll.choice_set.get(choice=choice).add_vote()
-                vote_field = Vote(poll=poll, user=request.user)
-                vote_field.save()
+                poll.choice_set.get(choice=choice).add_participant(user=request.user)
                 poll.save()
+            vote_field = Vote(poll=poll, user=request.user)
+            vote_field.save()
             return Response('Voted', status=status.HTTP_201_CREATED)
         elif len(choices) > 1:
             return Response('You are not allowed to select more than one choice', status=status.HTTP_400_BAD_REQUEST)
         else:
             poll.choice_set.get(choice=choices[0]).add_vote()
+            poll.choice_set.get(choice=choices[0]).add_participant(user=request.user)
             vote_field = Vote(poll=poll, user=request.user)
             vote_field.save()
             poll.save()
@@ -161,7 +163,7 @@ def results(request, pk):
         serializer = PollSerializer(poll, many=False)
         choices = []
         for choice in poll.choice_set.all():
-            choices.append([str(choice), choice.votes])
+            choices.append([str(choice), choice.votes, choice.participants_array])
         to_return = dict(serializer.data)
         to_return.update({'choices': choices})
         return Response(to_return, status=status.HTTP_200_OK)

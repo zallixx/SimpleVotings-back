@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -80,9 +81,14 @@ class Choice(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     choice = models.CharField(max_length=255)
     votes = models.IntegerField(default=0)
+    participants_array = models.JSONField(default=list)
 
     def add_vote(self):
         self.votes += 1
+        self.save()
+
+    def add_participant(self, user):
+        self.participants_array.append(user.user_id)
         self.save()
 
     def __str__(self):
