@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer
+from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer
 from base.api.validations import custom_validation
 from ..models import Poll, Vote, User, Complain
 
@@ -178,6 +178,12 @@ def get_author_name(request, pk):
         return Response(user.username, status=status.HTTP_200_OK)
     return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_vote_history(request):
+    votes = Vote.objects.filter(user_id=request.user.user_id)
+    serializer = VoteSerializer(votes, many=True)
+    return Response(serializer.data)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
