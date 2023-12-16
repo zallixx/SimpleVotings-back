@@ -139,10 +139,16 @@ def complain(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_complains(request):
-    complains = Complain.objects.filter(user=request.user.user_id)
+    complains = Complain.objects.filter(user_id=request.user.user_id)
     serializer = ComplainSerializer(complains, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_complain(request, pk):
+    complains = Complain.objects.filter(id=pk)
+    serializer = ComplainSerializer(complains, many=True)
+    return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
