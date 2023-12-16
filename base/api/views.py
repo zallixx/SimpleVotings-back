@@ -101,7 +101,7 @@ def edit_poll(request, pk):
 def vote(request, pk):
     poll = Poll.objects.get(id=pk)
     try:
-        choices = [request.data['choices']]
+        choices = request.data['choices']
         if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
             return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
         if poll.type_voting == 1:
