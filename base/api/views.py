@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer
 from base.api.validations import custom_validation
-from ..models import Poll, Vote, User
+from ..models import Poll, Vote, User, Complain
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -135,6 +135,13 @@ def complain(request, pk):
         complaint.save()
         return Response('Complained', status=status.HTTP_201_CREATED)
     return Response(complaint.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_complains(request):
+    complains = Complain.objects.all()
+    serializer = ComplainSerializer(complains, many=True)
+    return Response(serializer.data)
 
 
 @api_view(['GET'])
