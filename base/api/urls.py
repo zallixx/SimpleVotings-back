@@ -22,8 +22,8 @@ urlpatterns = [
     path('complains/', views.get_complains, name='get_complains'),
     path('complains/<int:pk>/', views.get_complain, name='get_complain'),
     path('vote-history/', views.get_vote_history, name='get_vote_history'),
-    path('profile/', views.get_user_data, name='get_user_data'),
-    path('profile/edit/', views.edit_user_data, name='edit_user_data'),
+    path('settings/', views.get_user_data, name='get_user_data'),
+    path('settings/edit/', views.edit_user_data, name='edit_user_data'),
     path('change_password/', views.change_password, name='change_password'),
     path('', views.getRoutes),
 ]
