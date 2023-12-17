@@ -185,7 +185,11 @@ def get_author_name(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_vote_history(request):
-    votes = Vote.objects.filter(user_id=request.user.user_id)
+    anotherUser = request.GET.get('anotherUser')
+    if anotherUser:
+        votes = Vote.objects.filter(user_id=anotherUser)
+    else:
+        votes = Vote.objects.filter(user_id=request.user.user_id)
     serializer = VoteSerializer(votes, many=True)
     return Response(serializer.data)
 
