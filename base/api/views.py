@@ -217,3 +217,14 @@ def change_password(request):
         user.save()
         return Response('Password changed', status=status.HTTP_200_OK)
     return Response('Wrong password', status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def edit_user_data(request):
+    user = User.objects.get(user_id=request.user.user_id)
+    serializer = UserSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
