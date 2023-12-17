@@ -40,6 +40,7 @@ class User(AbstractBaseUser):
     is_public = models.BooleanField(default=True)
     show_history = models.BooleanField(default=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    quote = models.TextField(null=True, blank=True)
     is_superuser = models.BooleanField(default=False)
 
     objects = UserManager()
