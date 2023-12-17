@@ -185,7 +185,11 @@ def get_author_name(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_vote_history(request):
-    votes = Vote.objects.filter(user_id=request.user.user_id)
+    anotherUser = request.GET.get('anotherUser')
+    if anotherUser:
+        votes = Vote.objects.filter(user_id=anotherUser)
+    else:
+        votes = Vote.objects.filter(user_id=request.user.user_id)
     serializer = VoteSerializer(votes, many=True)
     return Response(serializer.data)
 
@@ -228,3 +232,13 @@ def edit_user_data(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user(request, pk):
+    if User.objects.filter(user_id=pk).exists():
+        user = User.objects.get(user_id=pk)
+        serializer = UserSerializer(user, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
