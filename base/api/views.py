@@ -71,7 +71,10 @@ def get_polls(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_poll(request, pk):
-    poll = Poll.objects.get(id=pk)
+    try:
+        poll = Poll.objects.get(id=pk)
+    except Poll.DoesNotExist:
+        return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     serializer = PollSerializer(poll, many=False)
     choices = []
     for choice in poll.choice_set.all():
@@ -84,7 +87,10 @@ def get_poll(request, pk):
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def edit_poll(request, pk):
-    poll = Poll.objects.get(id=pk)
+    try:
+        poll = Poll.objects.get(id=pk)
+    except Poll.DoesNotExist:
+        return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     serializer = PollSerializer(poll, data=request.data, partial=True)
     if ('created_by' in request.data.keys() and request.data['created_by'] == request.user.user_id) or (
             poll.created_by.user_id == request.user.user_id):
@@ -102,7 +108,10 @@ def edit_poll(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote(request, pk):
-    poll = Poll.objects.get(id=pk)
+    try:
+        poll = Poll.objects.get(id=pk)
+    except Poll.DoesNotExist:
+        return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     try:
         choices = request.data['choices']
         if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
@@ -131,7 +140,10 @@ def vote(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def complain(request, pk):
-    poll = Poll.objects.get(id=pk)
+    try:
+        poll = Poll.objects.get(id=pk)
+    except Poll.DoesNotExist:
+        return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     if poll.created_by.user_id == request.user.user_id:
         return Response('You cannot complain about your own poll', status=status.HTTP_400_BAD_REQUEST)
     complaint = ComplainSerializer(data=(request.data | {'user': request.user.user_id, 'poll': poll.id}))
@@ -162,7 +174,10 @@ def get_complain(request, pk):
 @permission_classes([IsAuthenticated])
 def results(request, pk):
     if Vote.objects.filter(user=request.user, poll=pk).exists():
-        poll = Poll.objects.get(id=pk)
+        try:
+            poll = Poll.objects.get(id=pk)
+        except Poll.DoesNotExist:
+            return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
         serializer = PollSerializer(poll, many=False)
         choices = []
         for choice in poll.choice_set.all():
@@ -197,7 +212,10 @@ def get_vote_history(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_poll(request, pk):
-    poll = Poll.objects.get(id=pk)
+    try:
+        poll = Poll.objects.get(id=pk)
+    except Poll.DoesNotExist:
+        return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     if poll.created_by.user_id == request.user.user_id:
         poll.delete()
         return Response('Deleted', status=status.HTTP_200_OK)
