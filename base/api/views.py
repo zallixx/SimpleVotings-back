@@ -260,3 +260,10 @@ def get_user(request, pk):
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request):
+    user = User.objects.get(user_id=request.user.user_id)
+    user.delete()
+    return Response('Deleted', status=status.HTTP_200_OK)

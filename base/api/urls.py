@@ -26,5 +26,6 @@ urlpatterns = [
     path('settings/edit/', views.edit_user_data, name='edit_user_data'),
     path('change_password/', views.change_password, name='change_password'),
     path('users/<int:pk>/', views.get_user, name='get_user'),
+    path('user/delete/', views.delete_user, name='delete_user'),
     path('', views.getRoutes),
 ]
