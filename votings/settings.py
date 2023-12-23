@@ -115,9 +115,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'maindjango',
-        'USER': 'timabananaman',
-        'PASSWORD': 'y2lHBChYbQ5K',
-        'HOST': 'ep-polished-moon-56417923.eu-central-1.aws.neon.tech',
+        'USER': '4alm@mail.com',
+        'PASSWORD': 'sc1WnJ7KXYgV',
+        'HOST': 'ep-gentle-morning-a2hdfa3d.eu-central-1.aws.neon.tech',
         'PORT': '5432',
         'OPTIONS': {'sslmode': 'require'},
     }
