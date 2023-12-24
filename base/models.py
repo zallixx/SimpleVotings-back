@@ -77,8 +77,8 @@ class Poll(models.Model):
     type_voting = models.IntegerField(choices=PollType.choices, default=PollType.DISCRETE,
                                       verbose_name='Тип голосования')
     author_name = models.CharField(max_length=255)
-    special = models.IntegerField(default=0)
-    remaining_time = models.DateTimeField(auto_now_add=True, blank=True)
+    special = models.IntegerField(default=0, blank=True)
+    remaining_time = models.CharField(blank=True, null=True)
     amount_participants = models.IntegerField(default=-1, blank=True)
     participants_amount_voted = models.IntegerField(default=0, blank=True)
 
