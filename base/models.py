@@ -76,6 +76,11 @@ class Poll(models.Model):
     redacted_at = models.DateTimeField(auto_now=True, blank=True)
     type_voting = models.IntegerField(choices=PollType.choices, default=PollType.DISCRETE,
                                       verbose_name='Тип голосования')
+    author_name = models.CharField(max_length=255)
+    special = models.BooleanField(default=False)
+    remaining_time = models.DateTimeField(auto_now_add=True, blank=True)
+    amount_participants = models.IntegerField(default=-1, blank=True)
+    participants_amount_voted = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
         return self.question
