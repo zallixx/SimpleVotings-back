@@ -1,11 +1,14 @@
+import base64
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer, UserSerializer
+from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer, UserSerializer, ResetPasswordSerializer, CheckPasswordTokenSerializer
 from base.api.validations import custom_validation
 from ..models import Poll, Vote, User, Complain
 
@@ -267,3 +270,23 @@ def delete_user(request):
     user = User.objects.get(user_id=request.user.user_id)
     user.delete()
     return Response('Deleted', status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def reset_password(request: Request) -> Response:
+    serializer = ResetPasswordSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        serializer.send_email()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def check_password_tokens(request: Request, uidb64: str, token: str) -> Response:
+    serializer = CheckPasswordTokenSerializer(data={'uidb64': uidb64, 'token': token})
+    if serializer.is_valid(raise_exception=True):
+        if serializer.validate({'uidb64': uidb64, 'token': token}):
+            user = User.objects.get(pk=base64.urlsafe_b64decode(uidb64).decode())
+            user.set_password(request.data['password'])
+            user.save()
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
