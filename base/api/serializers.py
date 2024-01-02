@@ -17,7 +17,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = '__all__'
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> UserModel:
         user = UserModel.objects.create_user(email=validated_data['email'], username=validated_data['username'],
                                              password=validated_data['password'])
         user.save()
@@ -29,14 +29,14 @@ class PollSerializer(serializers.ModelSerializer):
         model = Poll
         fields = '__all__'
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Poll:
         poll = Poll.objects.create(**validated_data)
         for choice in self.initial_data['choices']:
             poll.choice_set.create(choice=choice)
         poll.save()
         return poll
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Poll, validated_data: dict) -> Poll:
         if 'question' in validated_data:
             instance.question = validated_data.get('question')
         if 'type_voting' in validated_data:
