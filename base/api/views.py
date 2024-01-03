@@ -1,18 +1,23 @@
+import base64
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import Token
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer, UserSerializer
+from base.api.serializers import RegisterSerializer, PollSerializer, ComplainSerializer, VoteSerializer, UserSerializer, \
+    ResetPasswordSerializer, CheckPasswordTokenSerializer
 from base.api.validations import custom_validation
 from ..models import Poll, Vote, User, Complain
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
-    def get_token(cls, user):
+    def get_token(cls, user: User) -> Token:
         token = super().get_token(user)
 
         # Add custom claims
@@ -30,7 +35,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 @api_view(['GET'])
-def getRoutes(request):
+def getRoutes(request: Request) -> Response:
     routes = [
         '/api/token',
         '/api/token/refresh',
@@ -39,7 +44,7 @@ def getRoutes(request):
 
 
 @api_view(['POST'])
-def register(request):
+def register(request: Request) -> Response:
     clean_data = custom_validation(request.data)
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
@@ -51,7 +56,7 @@ def register(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_poll(request):
+def create_poll(request: Request) -> Response:
     request.data.update({'created_by': request.user.user_id})
     serializer = PollSerializer(data=request.data)
     if serializer.is_valid():
@@ -62,7 +67,7 @@ def create_poll(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_polls(request):
+def get_polls(request: Request) -> Response:
     polls = Poll.objects.all()
     serializer = PollSerializer(polls, many=True)
     return Response(serializer.data)
@@ -70,7 +75,7 @@ def get_polls(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_poll(request, pk):
+def get_poll(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
@@ -86,7 +91,7 @@ def get_poll(request, pk):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
-def edit_poll(request, pk):
+def edit_poll(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
@@ -107,7 +112,7 @@ def edit_poll(request, pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def vote(request, pk):
+def vote(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
@@ -139,7 +144,7 @@ def vote(request, pk):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def complain(request, pk):
+def complain(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
@@ -156,7 +161,7 @@ def complain(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_complains(request):
+def get_complains(request: Request) -> Response:
     complains = Complain.objects.filter(user_id=request.user.user_id)
     serializer = ComplainSerializer(complains, many=True)
     return Response(serializer.data)
@@ -164,7 +169,7 @@ def get_complains(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_complain(request, pk):
+def get_complain(request: Request, pk: int) -> Response:
     complains = Complain.objects.filter(id=pk)
     serializer = ComplainSerializer(complains, many=True)
     return Response(serializer.data)
@@ -172,7 +177,7 @@ def get_complain(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def results(request, pk):
+def results(request: Request, pk: int) -> Response:
     if Vote.objects.filter(user=request.user, poll=pk).exists():
         try:
             poll = Poll.objects.get(id=pk)
@@ -190,7 +195,7 @@ def results(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_author_name(request, pk):
+def get_author_name(request: Request, pk: int) -> Response:
     if User.objects.filter(user_id=pk).exists():
         user = User.objects.get(user_id=pk)
         return Response(user.username, status=status.HTTP_200_OK)
@@ -199,7 +204,7 @@ def get_author_name(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_vote_history(request):
+def get_vote_history(request: Request) -> Response:
     anotherUser = request.GET.get('anotherUser')
     if anotherUser:
         votes = Vote.objects.filter(user_id=anotherUser)
@@ -211,7 +216,7 @@ def get_vote_history(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_poll(request, pk):
+def delete_poll(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
@@ -224,7 +229,7 @@ def delete_poll(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_user_data(request):
+def get_user_data(request: Request) -> Response:
     user = User.objects.get(user_id=request.user.user_id)
     serializer = UserSerializer(user, many=False)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -232,7 +237,7 @@ def get_user_data(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def change_password(request):
+def change_password(request: Request) -> Response:
     user = User.objects.get(user_id=request.user.user_id)
     if user.check_password(request.data['old_password']):
         user.set_password(request.data['new_password'])
@@ -243,7 +248,7 @@ def change_password(request):
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
-def edit_user_data(request):
+def edit_user_data(request: Request) -> Response:
     user = User.objects.get(user_id=request.user.user_id)
     serializer = UserSerializer(user, data=request.data, partial=True)
     if serializer.is_valid():
@@ -254,16 +259,38 @@ def edit_user_data(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_user(request, pk):
+def get_user(request: Request, pk: int) -> Response:
     if User.objects.filter(user_id=pk).exists():
         user = User.objects.get(user_id=pk)
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_user(request):
+def delete_user(request: Request) -> Response:
     user = User.objects.get(user_id=request.user.user_id)
     user.delete()
     return Response('Deleted', status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def reset_password(request: Request) -> Response:
+    serializer = ResetPasswordSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        serializer.send_email()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def check_password_tokens(request: Request, uidb64: str, token: str) -> Response:
+    serializer = CheckPasswordTokenSerializer(data={'uidb64': uidb64, 'token': token})
+    if serializer.is_valid(raise_exception=True):
+        if serializer.validate({'uidb64': uidb64, 'token': token}):
+            user = User.objects.get(pk=base64.urlsafe_b64decode(uidb64).decode())
+            user.set_password(request.data['password'])
+            user.save()
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
