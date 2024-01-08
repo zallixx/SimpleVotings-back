@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime, timedelta
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -119,12 +120,22 @@ def vote(request: Request, pk: int) -> Response:
         return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     try:
         choices = request.data['choices']
+        print(choices)
         if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
             return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
+        if poll.special == 1:
+            if poll.participants_amount_voted >= poll.amount_participants:
+                return Response('Poll is closed', status=status.HTTP_400_BAD_REQUEST)
+        if poll.special == 2:
+            print(datetime.now())
+            print(datetime.strptime(poll.remaining_time, '%a, %d %b %Y %H:%M:%S GMT') + timedelta(hours=3))
+            if datetime.now() < datetime.strptime(poll.remaining_time, '%a, %d %b %Y %H:%M:%S GMT'):
+                return Response('Poll is closed', status=status.HTTP_400_BAD_REQUEST)
         if poll.type_voting == 1:
             for choice in choices:
                 poll.choice_set.get(choice=choice).add_vote()
                 poll.choice_set.get(choice=choice).add_participant(user=request.user)
+                poll.participants_amount_voted += 1
                 poll.save()
             vote_field = Vote(poll=poll, user=request.user)
             vote_field.save()
@@ -136,9 +147,11 @@ def vote(request: Request, pk: int) -> Response:
             poll.choice_set.get(choice=choices[0]).add_participant(user=request.user)
             vote_field = Vote(poll=poll, user=request.user)
             vote_field.save()
+            poll.participants_amount_voted += 1
             poll.save()
             return Response('Voted', status=status.HTTP_201_CREATED)
-    except:
+    except Exception as e:
+        print(e)
         return Response('You need to select at least one choice', status=status.HTTP_400_BAD_REQUEST)
 
 
