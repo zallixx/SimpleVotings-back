@@ -182,6 +182,24 @@ def get_complains(request: Request) -> Response:
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def get_complains_unread(request: Request) -> Response:
+    complains = Complain.objects.filter(status='Отправлена. Ожидает рассмотрения.')
+    serializer = ComplainSerializer(complains, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def set_answer_complain(request: Request, pk: int) -> Response:
+    if not Complain.objects.filter(id=pk).exists():
+        return Response("Complain does not exist", status=status.HTTP_404_NOT_FOUND)
+    if request.user.is_admin:
+        complains = Complain.objects.filter(id=pk)
+        complains.update(status='Рассмотрена', response=request.data['response'])
+        return Response("Ответ отправлен", status=status.HTTP_200_OK)
+    return Response("Недостаточно прав", status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_complain(request: Request, pk: int) -> Response:
     complains = Complain.objects.filter(id=pk)
     serializer = ComplainSerializer(complains, many=True)
