@@ -26,7 +26,9 @@ urlpatterns = [
     path('polls/<int:pk>/delete/', views.delete_poll, name='delete_poll'),
 
     path('complains/', views.get_complains, name='get_complains'),
+    path('complains/all/', views.get_complains_unread, name='get_complains_unread'),
     path('complains/<int:pk>/', views.get_complain, name='get_complain'),
+    path('complains/<int:pk>/set_answer/', views.set_answer_complain, name='set_answer_complain'),
 
     path('vote-history/', views.get_vote_history, name='get_vote_history'),
 
