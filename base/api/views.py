@@ -1,6 +1,7 @@
 import base64
 from datetime import datetime, timedelta
 
+import pytz
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -127,7 +128,7 @@ def vote(request: Request, pk: int) -> Response:
         if poll.special == 2:
             print(datetime.now())
             print(datetime.strptime(poll.remaining_time, '%a, %d %b %Y %H:%M:%S GMT') + timedelta(hours=3))
-            if datetime.now() < datetime.strptime(poll.remaining_time, '%a, %d %b %Y %H:%M:%S GMT'):
+            if datetime.now(pytz.utc) < datetime.strptime(poll.remaining_time, "%a, %d %b %Y %H:%M:%S %Z").astimezone(pytz.utc):
                 return Response('Poll is closed', status=status.HTTP_400_BAD_REQUEST)
         if poll.type_voting == 1:
             for choice in choices:
