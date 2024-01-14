@@ -252,7 +252,7 @@ def delete_poll(request: Request, pk: int) -> Response:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
         return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
-    if poll.created_by.user_id == request.user.user_id:
+    if poll.created_by.user_id == request.user.user_id or request.user.is_admin:
         poll.delete()
         return Response('Deleted', status=status.HTTP_200_OK)
     return Response('You cannot delete this poll', status=status.HTTP_400_BAD_REQUEST)
