@@ -67,7 +67,6 @@ def create_poll(request: Request) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_polls(request: Request) -> Response:
     polls = Poll.objects.all()
     serializer = PollSerializer(polls, many=True)
@@ -75,7 +74,6 @@ def get_polls(request: Request) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_poll(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
@@ -225,7 +223,6 @@ def results(request: Request, pk: int) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_author_name(request: Request, pk: int) -> Response:
     if User.objects.filter(user_id=pk).exists():
         user = User.objects.get(user_id=pk)
