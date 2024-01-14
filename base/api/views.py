@@ -67,7 +67,6 @@ def create_poll(request: Request) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_polls(request: Request) -> Response:
     polls = Poll.objects.all()
     serializer = PollSerializer(polls, many=True)
@@ -75,7 +74,6 @@ def get_polls(request: Request) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_poll(request: Request, pk: int) -> Response:
     try:
         poll = Poll.objects.get(id=pk)
@@ -182,6 +180,24 @@ def get_complains(request: Request) -> Response:
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def get_complains_unread(request: Request) -> Response:
+    complains = Complain.objects.filter(status='Отправлена. Ожидает рассмотрения.')
+    serializer = ComplainSerializer(complains, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def set_answer_complain(request: Request, pk: int) -> Response:
+    if not Complain.objects.filter(id=pk).exists():
+        return Response("Complain does not exist", status=status.HTTP_404_NOT_FOUND)
+    if request.user.is_admin:
+        complains = Complain.objects.filter(id=pk)
+        complains.update(status='Рассмотрена', response=request.data['response'])
+        return Response("Ответ отправлен", status=status.HTTP_200_OK)
+    return Response("Недостаточно прав", status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_complain(request: Request, pk: int) -> Response:
     complains = Complain.objects.filter(id=pk)
     serializer = ComplainSerializer(complains, many=True)
@@ -207,7 +223,6 @@ def results(request: Request, pk: int) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_author_name(request: Request, pk: int) -> Response:
     if User.objects.filter(user_id=pk).exists():
         user = User.objects.get(user_id=pk)
@@ -234,7 +249,7 @@ def delete_poll(request: Request, pk: int) -> Response:
         poll = Poll.objects.get(id=pk)
     except Poll.DoesNotExist:
         return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
-    if poll.created_by.user_id == request.user.user_id:
+    if poll.created_by.user_id == request.user.user_id or request.user.is_admin:
         poll.delete()
         return Response('Deleted', status=status.HTTP_200_OK)
     return Response('You cannot delete this poll', status=status.HTTP_400_BAD_REQUEST)

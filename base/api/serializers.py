@@ -30,11 +30,15 @@ class PollSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data: dict) -> Poll:
-        poll = Poll.objects.create(**validated_data)
-        for choice in self.initial_data['choices']:
-            poll.choice_set.create(choice=choice)
-        poll.save()
-        return poll
+        choices = self.initial_data['choices']
+        if len(choices) == len(set(choices)):
+            poll = Poll.objects.create(**validated_data)
+            for choice in choices:
+                poll.choice_set.create(choice=choice)
+            poll.save()
+            return poll
+        else:
+            raise serializers.ValidationError('Choices must be unique')
 
     def update(self, instance: Poll, validated_data: dict) -> Poll:
         if 'question' in validated_data:
@@ -42,9 +46,13 @@ class PollSerializer(serializers.ModelSerializer):
         if 'type_voting' in validated_data:
             instance.type_voting = validated_data.get('type_voting')
         if 'choices' in self.initial_data:
-            instance.choice_set.all().delete()
-            for choice in self.initial_data.get('choices'):
-                instance.choice_set.create(choice=choice)
+            choices = self.initial_data['choices']
+            if len(choices) == len(set(choices)):
+                instance.choice_set.all().delete()
+                for choice in self.initial_data.get('choices'):
+                    instance.choice_set.create(choice=choice)
+            else:
+                raise serializers.ValidationError('Choices must be unique')
         instance.redacted_at = datetime.now()
         instance.save()
         return instance
