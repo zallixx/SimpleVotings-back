@@ -119,16 +119,18 @@ def vote(request: Request, pk: int) -> Response:
         return Response("Poll does not exist", status=status.HTTP_404_NOT_FOUND)
     try:
         choices = request.data['choices']
-        print(choices)
+        print(f"Choices = {choices}")
         if len(Vote.objects.filter(user=request.user, poll=poll)) > 0:
             return Response('You have already voted', status=status.HTTP_400_BAD_REQUEST)
         if poll.special == 1:
             if poll.participants_amount_voted >= poll.amount_participants:
                 return Response('Poll is closed', status=status.HTTP_400_BAD_REQUEST)
         if poll.special == 2:
-            print(datetime.now())
-            print(datetime.strptime(poll.remaining_time, '%a, %d %b %Y %H:%M:%S GMT') + timedelta(hours=3))
-            if datetime.now(pytz.utc) < datetime.strptime(poll.remaining_time, "%a, %d %b %Y %H:%M:%S %Z").astimezone(pytz.utc):
+            now = datetime.now()
+            print(f"Time now = {now}")
+            remaining_time = datetime.strptime(poll.remaining_time, '%a, %d %b %Y %H:%M:%S GMT') + timedelta(hours=3)
+            print(f"Strptime = {remaining_time}")
+            if now > remaining_time:
                 return Response('Poll is closed', status=status.HTTP_400_BAD_REQUEST)
         if poll.type_voting == 1:
             for choice in choices:
