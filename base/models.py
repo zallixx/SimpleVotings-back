@@ -3,6 +3,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import CharField, BooleanField
 
+def file_location(instance, filename, **kwargs):
+    file_path = f"{instance.id}-{filename}"
+    return file_path
 
 class UserManager(BaseUserManager):
     """Manager for User model"""
@@ -82,6 +85,7 @@ class Poll(models.Model):
     remaining_time = models.CharField(blank=True, null=True)
     amount_participants = models.IntegerField(default=-1, blank=True)
     participants_amount_voted = models.IntegerField(default=0, blank=True)
+    picture = models.ImageField(upload_to=file_location, null=True, blank=True)
 
     def __str__(self) -> CharField:
         return self.question

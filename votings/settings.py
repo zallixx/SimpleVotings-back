@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -174,3 +175,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ''
 # TODO add email and password for email !!!IMPORTANT!!!
 EMAIL_HOST_PASSWORD = ''
+
+MEDIA_URL = 'polls_pic/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'polls_pic/')

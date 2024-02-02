@@ -2,6 +2,7 @@ import base64
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
@@ -25,6 +26,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class PollSerializer(serializers.ModelSerializer):
+    picture = Base64ImageField(required=False)
+
     class Meta:
         model = Poll
         fields = '__all__'
