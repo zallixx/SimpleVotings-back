@@ -1,11 +1,16 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import CharField, BooleanField
 
+def file_location(instance, filename, **kwargs):
+    file_path = f"{instance.id}-{filename}"
+    return file_path
 
 class UserManager(BaseUserManager):
     """Manager for User model"""
 
-    def create_user(self, username, email, password):
+    def create_user(self, username: str, email: str, password: str) -> object:
         if not email:
             raise ValueError('User must have an email address')
         if not username:
@@ -16,7 +21,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email, password):
+    def create_superuser(self, username: str, email: str, password: str) -> object:
         user = self.create_user(username=username, email=email, password=password)
         user.is_staff = True
         user.is_admin = True
@@ -36,6 +41,10 @@ class User(AbstractBaseUser):
     age = models.IntegerField(null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)
+    show_history = models.BooleanField(default=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    quote = models.TextField(null=True, blank=True)
     is_superuser = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -47,13 +56,13 @@ class User(AbstractBaseUser):
     class Meta:
         ordering = ['-date_joined']
 
-    def __str__(self):
+    def __str__(self) -> CharField:
         return self.username
 
-    def has_perm(self, perm, obj=None):
+    def has_perm(self, perm: str, obj: object = None) -> BooleanField:
         return self.is_admin
 
-    def has_module_perms(self, app_label):
+    def has_module_perms(self, app_label: str) -> bool:
         return True
 
 
@@ -71,8 +80,14 @@ class Poll(models.Model):
     redacted_at = models.DateTimeField(auto_now=True, blank=True)
     type_voting = models.IntegerField(choices=PollType.choices, default=PollType.DISCRETE,
                                       verbose_name='Тип голосования')
+    author_name = models.CharField(max_length=255)
+    special = models.IntegerField(default=0, blank=True)
+    remaining_time = models.CharField(blank=True, null=True)
+    amount_participants = models.IntegerField(default=-1, blank=True)
+    participants_amount_voted = models.IntegerField(default=0, blank=True)
+    picture = models.ImageField(upload_to=file_location, null=True, blank=True)
 
-    def __str__(self):
+    def __str__(self) -> CharField:
         return self.question
 
 
@@ -80,23 +95,32 @@ class Choice(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     choice = models.CharField(max_length=255)
     votes = models.IntegerField(default=0)
+    participants_array = models.JSONField(default=list)
 
-    def add_vote(self):
+    def add_vote(self) -> None:
         self.votes += 1
         self.save()
 
-    def __str__(self):
+    def add_participant(self, user: User) -> None:
+        self.participants_array.append(user.user_id)
+        self.save()
+
+    def __str__(self) -> CharField:
         return self.choice
 
     class Meta:
         verbose_name = 'Вариант ответа'
         verbose_name_plural = 'Варианты ответов'
 
+
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+
 
 class Complain(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     text = models.TextField()
+    status = models.TextField(default='Отправлена. Ожидает рассмотрения.')
+    response = models.TextField(default='')
